@@ -54,9 +54,11 @@
             gameModes.forEach(mode => {
                 let players = [];
                 for (const [userId, scores] of Object.entries(db.users)) {
-                    // 🌟 최고 점수(best) 기준으로 랭킹 보드 등록
                     const userBest = scores[mode.key] && scores[mode.key].best !== undefined ? scores[mode.key].best : 0;
-                    if (userBest > 0) {
+                    const playCount = scores[mode.key] && scores[mode.key].count !== undefined ? scores[mode.key].count : 0;
+                    
+                    // 🌟 수정완료: 플레이 횟수(count)가 1번 이상이면 무조건 0점이어도 랭크에 등록
+                    if (playCount > 0) {
                         players.push({ id: userId, score: userBest });
                     }
                 }

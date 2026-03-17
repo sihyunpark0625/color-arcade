@@ -113,7 +113,6 @@ function endGame() {
         
         localStorage.setItem('arcadeDB_v2', JSON.stringify(db));
     }
-    // ... 이 아래로는 기존 점수 애니메이션 코드 유지 (gradeText.innerText = "" 부터 끝까지)
     gradeText.innerText = "";
     finalScoreText.innerText = "0.0%"; 
     finalScoreText.style.color = "hsl(0, 80%, 50%)"; 
@@ -129,7 +128,6 @@ function endGame() {
             displayScore = averageScore;
             clearInterval(scoreInterval);
             
-            // 🌟🌟 에러 원인 수정 (avg -> averageScore)
             if (averageScore >= 90) gradeText.innerText = "Nearly perfect!";
             else if (averageScore >= 70) gradeText.innerText = "Good job!";
             else if (averageScore >= 40) gradeText.innerText = "Meh, not bad.";

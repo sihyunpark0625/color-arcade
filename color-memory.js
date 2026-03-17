@@ -67,7 +67,7 @@ function startRound() {
             
             targetBox.style.backgroundColor = "#7f8c8d";
             targetBox.innerText = "?";
-            targetBox.style.fontSize = "2.5rem"; // CSS와 동일하게 슬림한 크기로 제한
+            targetBox.style.fontSize = "2.5rem";
             instructionText.innerText = "Quick! Mix from your memory!";
             
             setSlidersDisabled(false);
@@ -139,14 +139,13 @@ function endGame() {
             };
         }
         
-        const gameData = db.users[currentUser].memory; // 🌟 메모리 데이터
+        const gameData = db.users[currentUser].memory; 
         if (averageScore > gameData.best) gameData.best = averageScore;
         gameData.sum += averageScore;
         gameData.count += 1;
         
         localStorage.setItem('arcadeDB_v2', JSON.stringify(db));
     }
-    // ... 이 아래로는 기존 점수 애니메이션 코드 유지
 
     gradeText.innerText = "";
     finalScoreText.innerText = "0.0%"; 
@@ -163,7 +162,6 @@ function endGame() {
             displayScore = averageScore;
             clearInterval(scoreInterval);
             
-            // 🌟🌟 에러 원인 수정 (avg -> averageScore)
             if (averageScore >= 90) gradeText.innerText = "Nearly perfect!";
             else if (averageScore >= 70) gradeText.innerText = "Good job!";
             else if (averageScore >= 40) gradeText.innerText = "Meh, not bad.";

@@ -79,14 +79,13 @@ function endGame() {
             };
         }
         
-        const gameData = db.users[currentUser].odd; // 🌟 오드 데이터
+        const gameData = db.users[currentUser].odd; 
         if (avg > gameData.best) gameData.best = avg;
         gameData.sum += avg;
         gameData.count += 1;
         
         localStorage.setItem('arcadeDB_v2', JSON.stringify(db));
     }
-    // ... 이 아래로는 기존 점수 애니메이션 코드 유지
 
     let displayScore = 0;
     const scoreInterval = setInterval(() => {

@@ -119,7 +119,6 @@ function endGame() {
             };
         }
         
-        // 🌟🌟 바로 이 부분이 문제였습니다! memory가 아니라 paint로 수정완료! 🌟🌟
         const gameData = db.users[currentUser].paint; 
         
         if (averageScore > gameData.best) gameData.best = averageScore;
