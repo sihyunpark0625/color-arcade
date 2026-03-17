@@ -15,7 +15,6 @@ let currentRound = 1;
 let totalScore = 0;
 let targetColor, timerInterval, timeLeft;
 
-// 🌟 난이도 곡선 유지
 const diffs = [50, 40, 32, 25, 19, 14, 10, 6.5, 3.5, 1.5];
 
 function startRound() {
@@ -59,7 +58,6 @@ function showGrid(size, time) {
     
     const diff = diffs[currentRound - 1] || 1.5;
     
-    // 🌟 오답 타일 전용 인덱스 카운터
     let wrongIndex = 0; 
     
     for (let i = 0; i < totalTiles; i++) {
@@ -67,26 +65,20 @@ function showGrid(size, time) {
         tile.className = "color-tile";
         
         if (i === correctIdx) {
-            // 정답 타일은 외운 색상 그대로!
             tile.style.backgroundColor = `hsl(${targetColor.h}, ${targetColor.s}%, ${targetColor.l}%)`;
             tile.onclick = () => selectTile(true);
         } else {
             wrongIndex++;
             
-            // 🌟 같은 색이 절대 안 나오게 만드는 핵심 로직 🌟
-            // 1. 방향을 번갈아가며 생성 (1, -1, 1, -1...)
+
             let sign = wrongIndex % 2 === 0 ? -1 : 1; 
             
-            // 2. 두 개씩 짝지어서 멀어지는 단계(step)를 올림 (1, 1, 2, 2, 3, 3...)
             let step = Math.ceil(wrongIndex / 2); 
             
-            // 3. 타일마다 추가할 오차 간격 (최소 2.5도는 무조건 차이나게 벌림)
             let stepAmount = Math.max(2.5, diff * 0.2); 
             
-            // 4. 절대 겹칠 수 없는 고유한 Hue 오차값 계산
             let offsetH = sign * (diff + (step - 1) * stepAmount);
 
-            // 5. 채도와 명도도 겹치지 않게 타일마다 1%씩 규칙적으로 조정
             let offsetS = sign * step;
             let offsetL = -sign * step;
 
