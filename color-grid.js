@@ -10,16 +10,17 @@ const finalScoreText = document.getElementById('finalScoreText');
 const gradeText = document.getElementById('gradeText');
 const restartBtn = document.getElementById('restartBtn');
 
-// 🌟 10에서 5로 변경!
-const MAX_ROUNDS = 5;
+const MAX_ROUNDS = 10;
 let currentRound = 1;
 let totalScore = 0;
 let targetColor, timerInterval, timeLeft;
 
+// 🌟 난이도 곡선 유지
+const diffs = [50, 40, 32, 25, 19, 14, 10, 6.5, 3.5, 1.5];
+
 function startRound() {
-    // 🌟 사각형 크기 무조건 2x2 (가로세로 2)로 고정
-    const gridSize = 2; 
-    const timeLimit = 11 - currentRound; // 시간은 10초에서 점점 짧아짐
+    const gridSize = currentRound <= 3 ? 2 : currentRound <= 7 ? 3 : 4; 
+    const timeLimit = Math.max(4, 12 - currentRound); 
     
     tileGrid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
     tileGrid.style.display = "none";
@@ -37,9 +38,11 @@ function startRound() {
     targetBox.innerText = memTime;
     const memInterval = setInterval(() => {
         memTime--;
-        targetBox.innerText = memTime;
-        if (memTime <= 0) {
+        if (memTime > 0) {
+            targetBox.innerText = memTime;
+        } else {
             clearInterval(memInterval);
+            targetBox.innerText = "";
             showGrid(gridSize, timeLimit);
         }
     }, 1000);
@@ -54,18 +57,40 @@ function showGrid(size, time) {
     const totalTiles = size * size;
     const correctIdx = Math.floor(Math.random() * totalTiles);
     
+    const diff = diffs[currentRound - 1] || 1.5;
+    
+    // 🌟 오답 타일 전용 인덱스 카운터
+    let wrongIndex = 0; 
+    
     for (let i = 0; i < totalTiles; i++) {
         const tile = document.createElement('div');
         tile.className = "color-tile";
         
         if (i === correctIdx) {
+            // 정답 타일은 외운 색상 그대로!
             tile.style.backgroundColor = `hsl(${targetColor.h}, ${targetColor.s}%, ${targetColor.l}%)`;
             tile.onclick = () => selectTile(true);
         } else {
-            // 🌟 색상 차이 훨씬 미세하게 조정! (라운드 5에서는 차이가 거의 안 남)
-            const diff = Math.max(2, 10 - (currentRound * 1.5)); 
-            const offsetH = (Math.random() - 0.5) * diff * 2;
-            tile.style.backgroundColor = `hsl(${targetColor.h + offsetH}, ${targetColor.s}%, ${targetColor.l}%)`;
+            wrongIndex++;
+            
+            // 🌟 같은 색이 절대 안 나오게 만드는 핵심 로직 🌟
+            // 1. 방향을 번갈아가며 생성 (1, -1, 1, -1...)
+            let sign = wrongIndex % 2 === 0 ? -1 : 1; 
+            
+            // 2. 두 개씩 짝지어서 멀어지는 단계(step)를 올림 (1, 1, 2, 2, 3, 3...)
+            let step = Math.ceil(wrongIndex / 2); 
+            
+            // 3. 타일마다 추가할 오차 간격 (최소 2.5도는 무조건 차이나게 벌림)
+            let stepAmount = Math.max(2.5, diff * 0.2); 
+            
+            // 4. 절대 겹칠 수 없는 고유한 Hue 오차값 계산
+            let offsetH = sign * (diff + (step - 1) * stepAmount);
+
+            // 5. 채도와 명도도 겹치지 않게 타일마다 1%씩 규칙적으로 조정
+            let offsetS = sign * step;
+            let offsetL = -sign * step;
+
+            tile.style.backgroundColor = `hsl(${targetColor.h + offsetH}, ${targetColor.s + offsetS}%, ${targetColor.l + offsetL}%)`;
             tile.onclick = () => selectTile(false);
         }
         tileGrid.appendChild(tile);
@@ -89,7 +114,7 @@ function selectTile(isCorrect) {
     if (isCorrect) totalScore += 100;
     
     currentRound++;
-    scoreDisplay.innerText = `Score: ${Math.round(totalScore / 5)}`; // 평균 점수 계산식 5로 변경
+    scoreDisplay.innerText = `Score: ${Math.round(totalScore / 10)}`;
 
     if (currentRound > MAX_ROUNDS) endGame();
     else startRound();
@@ -108,14 +133,22 @@ function endGame() {
             };
         }
         
-        const gameData = db.users[currentUser].grid; // 🌟 그리드 데이터
+        const gameData = db.users[currentUser].grid; 
         if (avg > gameData.best) gameData.best = avg;
         gameData.sum += avg;
         gameData.count += 1;
         
         localStorage.setItem('arcadeDB_v2', JSON.stringify(db));
     }
-    // ... 이 아래로는 기존 점수 애니메이션 코드 유지 (let displayScore = 0; 부터 끝까지)
+
+    gradeText.innerText = "";
+    finalScoreText.innerText = "0.0%";
+    finalScoreText.style.color = "hsl(0, 80%, 50%)";
+
+    if (avg === 0) {
+        gradeText.innerText = "Keep trying...";
+        return;
+    }
 
     let displayScore = 0;
     const scoreInterval = setInterval(() => {
